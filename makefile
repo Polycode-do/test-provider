@@ -3,7 +3,7 @@ HOSTNAME=do-2021.fr
 NAMESPACE=polycode
 NAME=polycode
 BINARY=terraform-provider-${NAME}
-VERSION=0.1.1
+VERSION=0.2.0
 OS_ARCH=linux_amd64
 
 default: install
