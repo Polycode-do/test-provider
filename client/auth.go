@@ -14,7 +14,13 @@ func (client *Client) Login() (*auth.AuthResponse, error) {
 		return nil, fmt.Errorf("empty username or password")
 	}
 
-	reqBody, err := json.Marshal(client.Auth)
+	authReq := auth.AuthRequest{
+		Username:  client.Auth.Username,
+		Password:  client.Auth.Password,
+		GrantType: "implicit",
+	}
+
+	reqBody, err := json.Marshal(authReq)
 	if err != nil {
 		return nil, err
 	}
