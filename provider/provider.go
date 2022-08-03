@@ -146,5 +146,7 @@ func (provider *Provider) GetResources(_ context.Context) (map[string]tfsdk.Reso
 }
 
 func (provider *Provider) GetDataSources(_ context.Context) (map[string]tfsdk.DataSourceType, diag.Diagnostics) {
-	return map[string]tfsdk.DataSourceType{}, nil
+	return map[string]tfsdk.DataSourceType{
+		"polycode_user": DataSourceUserType{},
+	}, nil
 }
