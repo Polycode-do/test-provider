@@ -1,14 +1,16 @@
 package main
 
 import (
-	"context"
-	"polycode-provider/provider"
+	polycode "polycode-provider/provider"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
 
 func main() {
-	providerserver.Serve(context.Background(), provider.New, providerserver.ServeOpts{
-		Address: "do-2021.fr/polycode/polycode",
+	plugin.Serve(&plugin.ServeOpts{
+		ProviderFunc: func() *schema.Provider {
+			return polycode.Provider()
+		},
 	})
 }
