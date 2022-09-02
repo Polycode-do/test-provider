@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	polycode "polycode-provider/client"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -29,7 +31,9 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("POLYCODE_PASSWORD", nil),
 			},
 		},
-		ResourcesMap:         map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"polycode_content": resourceContent(),
+		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
 	}
@@ -55,11 +59,13 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Unable to create Polycode client",
-				Detail:   "Unable to authenticate user for authenticated Polycode client",
+				Detail:   fmt.Sprintf("Unable to authenticate user Polycode client: %s", err.Error()),
 			})
 
 			return nil, diags
 		}
+
+		tflog.Debug(ctx, fmt.Sprintf("Authenticated client with user %s", username))
 
 		return c, diags
 	}
@@ -69,10 +75,12 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Unable to create Polycode client",
-			Detail:   "Unable to create anonymous Polycode client",
+			Detail:   fmt.Sprintf("Unable to create anonymous Polycode client: %s", err.Error()),
 		})
 		return nil, diags
 	}
+
+	tflog.Debug(ctx, "Authenticated anonymous client")
 
 	return c, diags
 }

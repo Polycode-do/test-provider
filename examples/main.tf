@@ -2,10 +2,9 @@ terraform {
   required_providers {
     polycode = {
       source  = "do-2021.fr/polycode/polycode"
-      version = "0.2.0"
+      version = "0.3.0"
     }
   }
-  required_version = ">= 1.1.0"
 }
 
 provider "polycode" {
@@ -14,10 +13,55 @@ provider "polycode" {
   password = "12345678"
 }
 
-data "polycode_user" "guest_user" {
-  id = "2f59a4db-f922-4e1e-adf6-e7f3cb4b91f1"
-}
-
-output "output_user" {
-  value = data.polycode_user.guest_user
+resource "polycode_content" "test" {
+  name        = "alooooo"
+  description = "testqlskdlqksjd"
+  type        = "exercise"
+  reward      = 1
+  container {
+    orientation = "vertical"
+    position    = 0
+    markdown {
+      position = 1
+      content  = "1"
+    }
+    markdown {
+      position = 2
+      content  = "3"
+    }
+    markdown {
+      position = 3
+      content  = "3"
+    }
+    editor {
+      position = 4
+      language_settings {
+        default_code = "5"
+        language     = "PYTHON"
+        version      = ""
+      }
+      hint = ["value"]
+      validator {
+        inputs    = ["value"]
+        outputs   = ["value"]
+        is_hidden = false
+      }
+    }
+    markdown {
+      position = 5
+      content  = "alo"
+    }
+    markdown {
+      position = 6
+      content  = "alo"
+    }
+    container {
+      position    = 7
+      orientation = "vertical"
+      markdown {
+        position = 1
+        content  = "hello"
+      }
+    }
+  }
 }
