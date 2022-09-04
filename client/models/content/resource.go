@@ -21,7 +21,7 @@ func (content *Content) IntoCreateContentRequest() CreateContentRequest {
 			Data: CreateComponentRequestData{
 				Components:     content.RootComponent.Data.IntoCreateComponentRequest(),
 				Markdown:       convertNilString(content.RootComponent.Data.Markdown),
-				Items:          content.RootComponent.Data.IntoStringSlice(),
+				Items:          content.RootComponent.Data.FlattenItemIdentifiers(),
 				Validators:     content.RootComponent.Data.IntoCreateValidatorRequest(),
 				EditorSettings: content.RootComponent.Data.IntoCreateEditorSettingsRequest(),
 				Orientation:    convertNilString(content.RootComponent.Orientation),
@@ -49,7 +49,7 @@ func (content Content) IntoUpdateContentRequest() UpdateContentRequest {
 				Validators: content.RootComponent.Data.IntoUpdateValidatorRequest(),
 				CreateComponentRequestData: CreateComponentRequestData{
 					Markdown:       convertNilString(content.RootComponent.Data.Markdown),
-					Items:          content.RootComponent.Data.IntoStringSlice(),
+					Items:          content.RootComponent.Data.FlattenItemIdentifiers(),
 					EditorSettings: content.RootComponent.Data.IntoCreateEditorSettingsRequest(),
 					Orientation:    convertNilString(content.RootComponent.Orientation),
 				},
@@ -71,7 +71,7 @@ type Component struct {
 type ComponentData struct {
 	Components     []Component
 	Markdown       string
-	Items          []Item
+	Items          []ItemIdentifier
 	Validators     []Validator
 	EditorSettings EditorSettings
 }
@@ -89,7 +89,7 @@ func (componentData *ComponentData) IntoCreateComponentRequest() *[]CreateCompon
 			Data: CreateComponentRequestData{
 				Components:     component.Data.IntoCreateComponentRequest(),
 				Markdown:       convertNilString(component.Data.Markdown),
-				Items:          component.Data.IntoStringSlice(),
+				Items:          component.Data.FlattenItemIdentifiers(),
 				Validators:     component.Data.IntoCreateValidatorRequest(),
 				EditorSettings: component.Data.IntoCreateEditorSettingsRequest(),
 				Orientation:    convertNilString(component.Orientation),
@@ -118,7 +118,7 @@ func (componentData *ComponentData) IntoUpdateComponentRequest() *[]UpdateCompon
 				Validators: component.Data.IntoUpdateValidatorRequest(),
 				CreateComponentRequestData: CreateComponentRequestData{
 					Markdown:       convertNilString(component.Data.Markdown),
-					Items:          component.Data.IntoStringSlice(),
+					Items:          component.Data.FlattenItemIdentifiers(),
 					EditorSettings: component.Data.IntoCreateEditorSettingsRequest(),
 					Orientation:    convertNilString(component.Orientation),
 				},
@@ -182,7 +182,7 @@ func (componentData *ComponentData) IntoUpdateValidatorRequest() *[]UpdateValida
 	return &result
 }
 
-func (componentData *ComponentData) IntoStringSlice() *[]string {
+func (componentData *ComponentData) FlattenItemIdentifiers() *[]string {
 	result := make([]string, 0)
 
 	if componentData.Items == nil {
@@ -190,21 +190,14 @@ func (componentData *ComponentData) IntoStringSlice() *[]string {
 	}
 
 	for _, item := range componentData.Items {
-		result = append(result, item.Data.Text)
+		result = append(result, item.ID)
 	}
 
 	return &result
 }
 
-type Item struct {
-	ID   string
-	Cost int64
-	Type string
-	Data ItemData
-}
-
-type ItemData struct {
-	Text string
+type ItemIdentifier struct {
+	ID string
 }
 
 type Validator struct {
