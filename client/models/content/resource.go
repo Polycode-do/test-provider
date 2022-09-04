@@ -77,7 +77,7 @@ type ComponentData struct {
 }
 
 func (componentData *ComponentData) IntoCreateComponentRequest() *[]CreateComponentRequest {
-	var result []CreateComponentRequest
+	result := make([]CreateComponentRequest, 0)
 
 	if componentData.Components == nil {
 		return nil
@@ -101,7 +101,7 @@ func (componentData *ComponentData) IntoCreateComponentRequest() *[]CreateCompon
 }
 
 func (componentData *ComponentData) IntoUpdateComponentRequest() *[]UpdateComponentRequest {
-	var result []UpdateComponentRequest
+	result := make([]UpdateComponentRequest, 0)
 
 	if componentData.Components == nil {
 		return nil
@@ -130,7 +130,7 @@ func (componentData *ComponentData) IntoUpdateComponentRequest() *[]UpdateCompon
 }
 
 func (componentData *ComponentData) IntoCreateValidatorRequest() *[]CreateValidatorRequest {
-	var result []CreateValidatorRequest
+	result := make([]CreateValidatorRequest, 0)
 
 	if componentData.Validators == nil {
 		return nil
@@ -148,7 +148,7 @@ func (componentData *ComponentData) IntoCreateValidatorRequest() *[]CreateValida
 }
 
 func (componentData *ComponentData) IntoCreateEditorSettingsRequest() *CreateEditorSettingsRequest {
-	var result CreateEditorSettingsRequest
+	result := CreateEditorSettingsRequest{}
 
 	if componentData.EditorSettings.Languages == nil {
 		return nil
@@ -162,7 +162,7 @@ func (componentData *ComponentData) IntoCreateEditorSettingsRequest() *CreateEdi
 }
 
 func (componentData *ComponentData) IntoUpdateValidatorRequest() *[]UpdateValidatorRequest {
-	var result []UpdateValidatorRequest
+	result := make([]UpdateValidatorRequest, 0)
 
 	if componentData.Validators == nil {
 		return nil
@@ -183,7 +183,7 @@ func (componentData *ComponentData) IntoUpdateValidatorRequest() *[]UpdateValida
 }
 
 func (componentData *ComponentData) IntoStringSlice() *[]string {
-	var result []string
+	result := make([]string, 0)
 
 	if componentData.Items == nil {
 		return nil
