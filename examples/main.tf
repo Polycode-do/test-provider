@@ -2,7 +2,7 @@ terraform {
   required_providers {
     polycode = {
       source  = "do-2021.fr/polycode/polycode"
-      version = "0.3.0"
+      version = "0.3.1"
     }
   }
 }
