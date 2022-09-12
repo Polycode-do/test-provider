@@ -29,21 +29,45 @@ func resourceContent() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The content name",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if len(i.(string)) < 3 {
+						return nil, []error{fmt.Errorf("name must be at least 3 characters long")}
+					}
+					return nil, nil
+				},
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The content description",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if len(i.(string)) < 3 {
+						return nil, []error{fmt.Errorf("description must be at least 3 characters long")}
+					}
+					return nil, nil
+				},
 			},
 			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The content type",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if i.(string) != "exercise" {
+						return nil, []error{fmt.Errorf("type must be exercise (more types will come in the future)")}
+					}
+					return nil, nil
+				},
 			},
 			"reward": {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The content reward",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if i.(int) < 0 {
+						return nil, []error{fmt.Errorf("reward must be a positive integer")}
+					}
+					return nil, nil
+				},
 			},
 			"container": {
 				Type:        schema.TypeList,
@@ -67,7 +91,6 @@ func resourceContentContainer(i int) *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The id of the component",
 			},
@@ -75,11 +98,23 @@ func resourceContentContainer(i int) *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The position where the component will be rendered",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if i.(int) < 0 {
+						return nil, []error{fmt.Errorf("position must be a positive integer")}
+					}
+					return nil, nil
+				},
 			},
 			"orientation": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The orientation of the container",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if i.(string) != "horizontal" && i.(string) != "vertical" {
+						return nil, []error{fmt.Errorf("orientation must be horizontal or vertical")}
+					}
+					return nil, nil
+				},
 			},
 			"markdown": {
 				Type:        schema.TypeSet,
@@ -108,7 +143,6 @@ func resourceContentDataMarkdown() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The id of the component",
 			},
@@ -116,6 +150,12 @@ func resourceContentDataMarkdown() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The position where the component will be rendered",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if i.(int) < 0 {
+						return nil, []error{fmt.Errorf("position must be a positive integer")}
+					}
+					return nil, nil
+				},
 			},
 			"content": {
 				Type:        schema.TypeString,
@@ -135,7 +175,6 @@ func resourceContentDataEditor() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The id of the component",
 			},
@@ -143,6 +182,12 @@ func resourceContentDataEditor() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The position where the component will be rendered",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if i.(int) < 0 {
+						return nil, []error{fmt.Errorf("position must be a positive integer")}
+					}
+					return nil, nil
+				},
 			},
 			"language_settings": {
 				Type:        schema.TypeSet,
@@ -171,7 +216,6 @@ func resourceContentValidator() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "The id of the validator",
 			},
@@ -209,6 +253,12 @@ func resourceContentLanguage() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The language",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					if i.(string) != "PYTHON" && i.(string) != "NODE" && i.(string) != "JAVA" && i.(string) != "RUST" {
+						return nil, []error{fmt.Errorf("language must be one of python, javascript, java or c")}
+					}
+					return nil, nil
+				},
 			},
 			"version": {
 				Type:        schema.TypeString,
@@ -224,6 +274,16 @@ func resourceContentCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	var diags diag.Diagnostics
 
+	childComponents, err := serializeChildComponents(d.Get("container.0").(map[string]interface{}), ctx)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to serialize child components",
+			Detail:   fmt.Sprintf("Error when serializing child components: %s", err.Error()),
+		})
+		return diags
+	}
+
 	co := content.Content{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
@@ -233,7 +293,7 @@ func resourceContentCreate(ctx context.Context, d *schema.ResourceData, m interf
 			Orientation: d.Get("container.0.orientation").(string),
 			Type:        "container",
 			Data: content.ComponentData{
-				Components: serializeChildComponents(d.Get("container.0").(map[string]interface{}), ctx),
+				Components: childComponents,
 			},
 		},
 		Data: content.ContentData{},
@@ -287,6 +347,16 @@ func resourceContentUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	c := m.(*pc.Client)
 
+	childComponents, err := serializeChildComponents(d.Get("container.0").(map[string]interface{}), ctx)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to serialize child components",
+			Detail:   fmt.Sprintf("Error when serializing child components: %s", err.Error()),
+		})
+		return diags
+	}
+
 	co := content.Content{
 		ID:          d.Id(),
 		Name:        d.Get("name").(string),
@@ -298,13 +368,13 @@ func resourceContentUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			Orientation: d.Get("container.0.orientation").(string),
 			Type:        "container",
 			Data: content.ComponentData{
-				Components: serializeChildComponents(d.Get("container.0").(map[string]interface{}), ctx),
+				Components: childComponents,
 			},
 		},
 		Data: content.ContentData{},
 	}
 
-	_, err := c.UpdateContent(co)
+	_, err = c.UpdateContent(co)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -341,7 +411,7 @@ func resourceContentDelete(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
-func serializeChildComponents(rootComponent map[string]interface{}, ctx context.Context) []content.Component {
+func serializeChildComponents(rootComponent map[string]interface{}, ctx context.Context) ([]content.Component, error) {
 	length := 0
 	for key, val := range rootComponent {
 		if key == "markdown" || key == "editor" {
@@ -355,13 +425,20 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 	tflog.Debug(ctx, fmt.Sprintf("Serializing root Component %s with %d child components", rootComponent["id"], length))
 
 	childComponents := make([]content.Component, length)
+	positions := make([]bool, length)
 
 	for key, val := range rootComponent {
 		switch key {
 		case "markdown":
 			for _, v := range val.(*schema.Set).List() {
 				markdown := v.(map[string]interface{})
+
 				position := markdown["position"].(int)
+				if position > length {
+					return nil, fmt.Errorf("position %d is greater than the number of child components %d", position, length)
+				}
+				positions[position-1] = true
+
 				childComponents[position-1] = content.Component{
 					ID:   markdown["id"].(string),
 					Type: "markdown",
@@ -414,6 +491,11 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 				}
 
 				position := editor["position"].(int)
+				if position > length {
+					return nil, fmt.Errorf("position %d is greater than the number of child components %d", position, length)
+				}
+				positions[position-1] = true
+
 				childComponents[position-1] = content.Component{
 					ID:   editor["id"].(string),
 					Type: "editor",
@@ -429,12 +511,23 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 		case "container":
 			for _, v := range val.([]interface{}) {
 				container := v.(map[string]interface{})
+
 				position := container["position"].(int)
+				if position > length {
+					return nil, fmt.Errorf("position %d is greater than the number of child components %d", position, length)
+				}
+				positions[position-1] = true
+
+				containerChildComponents, err := serializeChildComponents(container, ctx)
+				if err != nil {
+					return nil, err
+				}
+
 				childComponents[position-1] = content.Component{
 					ID:   container["id"].(string),
 					Type: "container",
 					Data: content.ComponentData{
-						Components: serializeChildComponents(container, ctx),
+						Components: containerChildComponents,
 					},
 					Orientation: container["orientation"].(string),
 				}
@@ -442,7 +535,13 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 		}
 	}
 
-	return childComponents
+	for i, position := range positions {
+		if !position {
+			return nil, fmt.Errorf("child component at position %d is missing, this is probably due to duplicate position in the container, please check that your positions go from 1 to %d", i+1, length)
+		}
+	}
+
+	return childComponents, nil
 }
 
 func deserializeChildComponents(rootComponent content.Component, position int, ctx context.Context) []interface{} {
