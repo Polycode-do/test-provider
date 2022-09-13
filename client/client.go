@@ -41,12 +41,15 @@ func NewClient(host, username, password *string) (*Client, error) {
 		Password: *password,
 	}
 
-	authResponse, err := client.Login()
+	token, err := client.Login()
 	if err != nil {
 		return nil, err
 	}
+	if token == nil {
+		return nil, fmt.Errorf("access token nil")
+	}
 
-	client.AccessToken = authResponse.Data.AccessToken
+	client.AccessToken = *token
 
 	return &client, nil
 }

@@ -5,16 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	models "polycode-provider/client/models/item"
 )
 
 type GetItemResponse struct {
-	Metadata struct{}
-	Data     models.GetItemResponse
+	Metadata struct{}               `json:"metadata"`
+	Data     models.GetItemResponse `json:"data"`
 }
 
-func (client *Client) GetItem(ID string) (*GetItemResponse, error) {
+func (client *Client) GetItem(ID string) (*models.Item, error) {
 	if ID == "" {
 		return nil, fmt.Errorf("empty ID")
 	}
@@ -35,53 +34,14 @@ func (client *Client) GetItem(ID string) (*GetItemResponse, error) {
 		return nil, err
 	}
 
-	return &itemResponse, nil
-}
-
-type GetItemsResponse struct {
-	Metadata struct{}
-	Data     []models.GetItemResponse
-}
-
-func (client *Client) GetItems(limit *int64, page *int64) (*GetItemsResponse, error) {
-	url, err := url.Parse(fmt.Sprintf("%s/item", client.Host))
-	if err != nil {
-		return nil, err
-	}
-
-	q := url.Query()
-
-	if limit != nil {
-		q.Set("limit", fmt.Sprintf("%d", *limit))
-	}
-	if page != nil {
-		q.Set("page", fmt.Sprintf("%d", *page))
-	}
-
-	req, err := http.NewRequest("GET", url.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := client.fetchAPI(req, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	itemsResponse := GetItemsResponse{}
-	err = json.Unmarshal(body, &itemsResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &itemsResponse, nil
+	return itemResponse.Data.IntoItem(), nil
 }
 
 type CreateItemResponse struct {
 	GetItemResponse
 }
 
-func (client *Client) CreateItem(item models.Item) (*CreateItemResponse, error) {
+func (client *Client) CreateItem(item models.Item) (*models.Item, error) {
 	body, err := json.Marshal(item.IntoCreateItemRequest())
 	if err != nil {
 		return nil, err
@@ -103,14 +63,18 @@ func (client *Client) CreateItem(item models.Item) (*CreateItemResponse, error) 
 		return nil, err
 	}
 
-	return &itemResponse, nil
+	return itemResponse.Data.IntoItem(), nil
 }
 
 type UpdateItemResponse struct {
 	GetItemResponse
 }
 
-func (client *Client) UpdateItem(item models.Item) (*UpdateItemResponse, error) {
+func (client *Client) UpdateItem(item models.Item) (*models.Item, error) {
+	if item.ID == "" {
+		return nil, fmt.Errorf("empty ID")
+	}
+
 	body, err := json.Marshal(item.IntoUpdateItemRequest())
 	if err != nil {
 		return nil, err
@@ -132,10 +96,14 @@ func (client *Client) UpdateItem(item models.Item) (*UpdateItemResponse, error) 
 		return nil, err
 	}
 
-	return &itemResponse, nil
+	return itemResponse.Data.IntoItem(), nil
 }
 
 func (client *Client) DeleteItem(ID string) error {
+	if ID == "" {
+		return fmt.Errorf("empty ID")
+	}
+
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/item/%s", client.Host, ID), nil)
 	if err != nil {
 		return err

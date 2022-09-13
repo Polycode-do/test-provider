@@ -1,5 +1,7 @@
 package item
 
+import "polycode-provider/client/shared"
+
 type Item struct {
 	ID   string
 	Type string
@@ -11,7 +13,7 @@ func (i *Item) IntoCreateItemRequest() CreateItemRequest {
 	return CreateItemRequest{
 		Type: i.Type,
 		Data: CreateItemRequestData{
-			Text: convertNilString(i.Data.Text),
+			Text: shared.ConvertNilString(i.Data.Text),
 		},
 		Cost: i.Cost,
 	}
@@ -22,10 +24,8 @@ func (i *Item) IntoUpdateItemRequest() UpdateItemRequest {
 		CreateItemRequest: CreateItemRequest{
 			Type: i.Type,
 			Cost: i.Cost,
-		},
-		Data: UpdateItemRequestData{
-			CreateItemRequestData{
-				Text: convertNilString(i.Data.Text),
+			Data: CreateItemRequestData{
+				Text: shared.ConvertNilString(i.Data.Text),
 			},
 		},
 	}
@@ -33,12 +33,4 @@ func (i *Item) IntoUpdateItemRequest() UpdateItemRequest {
 
 type ItemData struct {
 	Text string
-}
-
-func convertNilString(str string) *string {
-	if str == "" {
-		return nil
-	}
-
-	return &str
 }

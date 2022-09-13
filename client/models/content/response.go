@@ -1,5 +1,7 @@
 package content
 
+import "polycode-provider/client/shared"
+
 type GetContentResponse struct {
 	ID            string               `json:"id"`
 	Name          string               `json:"name"`
@@ -10,8 +12,8 @@ type GetContentResponse struct {
 	Data          struct{}             `json:"data"`
 }
 
-func (cr *GetContentResponse) IntoContent() Content {
-	return Content{
+func (cr *GetContentResponse) IntoContent() *Content {
+	return &Content{
 		ID:          cr.ID,
 		Name:        cr.Name,
 		Description: cr.Description,
@@ -22,12 +24,12 @@ func (cr *GetContentResponse) IntoContent() Content {
 			Type: cr.RootComponent.Type,
 			Data: ComponentData{
 				Components:     cr.RootComponent.Data.IntoComponents(),
-				Markdown:       checkNilStringPointer(cr.RootComponent.Data.Markdown),
+				Markdown:       shared.ConvertNilStringPointer(cr.RootComponent.Data.Markdown),
 				Items:          cr.RootComponent.Data.IntoItemsIdentifier(),
 				Validators:     cr.RootComponent.Data.IntoValidators(),
 				EditorSettings: cr.RootComponent.Data.IntoEditorSettings(),
 			},
-			Orientation: checkNilStringPointer(cr.RootComponent.Data.Orientation),
+			Orientation: shared.ConvertNilStringPointer(cr.RootComponent.Data.Orientation),
 		},
 		Data: ContentData{},
 	}
@@ -58,12 +60,12 @@ func (rd *GetComponentResponseData) IntoComponents() []Component {
 				Type: component.Type,
 				Data: ComponentData{
 					Components:     component.Data.IntoComponents(),
-					Markdown:       checkNilStringPointer(component.Data.Markdown),
+					Markdown:       shared.ConvertNilStringPointer(component.Data.Markdown),
 					Items:          component.Data.IntoItemsIdentifier(),
 					Validators:     component.Data.IntoValidators(),
 					EditorSettings: component.Data.IntoEditorSettings(),
 				},
-				Orientation: checkNilStringPointer(component.Data.Orientation),
+				Orientation: shared.ConvertNilStringPointer(component.Data.Orientation),
 			})
 		}
 	}
@@ -149,12 +151,4 @@ type CreateContentResponse struct {
 
 type UpdateContentResponse struct {
 	GetContentResponse
-}
-
-func checkNilStringPointer(str *string) string {
-	if str == nil {
-		return ""
-	}
-
-	return *str
 }

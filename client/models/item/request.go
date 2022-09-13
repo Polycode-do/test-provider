@@ -12,9 +12,4 @@ type CreateItemRequestData struct {
 
 type UpdateItemRequest struct {
 	CreateItemRequest
-	Data UpdateItemRequestData `json:"data"`
-}
-
-type UpdateItemRequestData struct {
-	CreateItemRequestData
 }

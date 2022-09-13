@@ -9,12 +9,17 @@ import (
 	"polycode-provider/client/models/auth"
 )
 
-func (client *Client) Login() (*auth.AuthResponse, error) {
+type LoginResponse struct {
+	Metadata struct{}           `json:"metadata"`
+	Data     auth.LoginResponse `json:"data"`
+}
+
+func (client *Client) Login() (*string, error) {
 	if client.Auth.Username == "" || client.Auth.Password == "" {
 		return nil, fmt.Errorf("empty username or password")
 	}
 
-	authReq := auth.AuthRequest{
+	authReq := auth.LoginRequest{
 		Username:  client.Auth.Username,
 		Password:  client.Auth.Password,
 		GrantType: "implicit",
@@ -35,11 +40,11 @@ func (client *Client) Login() (*auth.AuthResponse, error) {
 		return nil, err
 	}
 
-	authResponse := auth.AuthResponse{}
+	authResponse := LoginResponse{}
 	err = json.Unmarshal(body, &authResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	return &authResponse, nil
+	return &authResponse.Data.AccessToken, nil
 }

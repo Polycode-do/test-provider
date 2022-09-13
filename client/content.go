@@ -5,16 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	models "polycode-provider/client/models/content"
 )
 
 type GetContentResponse struct {
-	Metadata struct{}
-	Data     models.GetContentResponse
+	Metadata struct{}                  `json:"metadata"`
+	Data     models.GetContentResponse `json:"data"`
 }
 
-func (client *Client) GetContent(ID string) (*GetContentResponse, error) {
+func (client *Client) GetContent(ID string) (*models.Content, error) {
 	if ID == "" {
 		return nil, fmt.Errorf("empty ID")
 	}
@@ -35,60 +34,14 @@ func (client *Client) GetContent(ID string) (*GetContentResponse, error) {
 		return nil, err
 	}
 
-	return &contentResponse, nil
-}
-
-type GetContentsResponse struct {
-	Metadata struct{}
-	Data     []models.GetContentResponse
-}
-
-type ContentOrderBy struct {
-	Name   *int8
-	Reward *int8
-}
-
-func (client *Client) GetContents(limit *int64, page *int64) (*GetContentsResponse, error) {
-	url, err := url.Parse(fmt.Sprintf("%s/content", client.Host))
-	if err != nil {
-		return nil, err
-	}
-
-	q := url.Query()
-
-	if limit != nil {
-		q.Set("limit", fmt.Sprintf("%d", *limit))
-	}
-	if page != nil {
-		q.Set("page", fmt.Sprintf("%d", *page))
-	}
-
-	req, err := http.NewRequest("GET", url.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := client.fetchAPI(req, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	contentResponse := GetContentsResponse{}
-	err = json.Unmarshal(body, &contentResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &contentResponse, nil
+	return contentResponse.Data.IntoContent(), nil
 }
 
 type CreateContentResponse struct {
 	GetContentResponse
 }
 
-func (client *Client) CreateContent(content models.Content) (*CreateContentResponse, error) {
-	fmt.Printf("%+v\n", content.RootComponent.Data.Components)
-
+func (client *Client) CreateContent(content models.Content) (*models.Content, error) {
 	body, err := json.Marshal(content.IntoCreateContentRequest())
 	if err != nil {
 		return nil, err
@@ -110,14 +63,18 @@ func (client *Client) CreateContent(content models.Content) (*CreateContentRespo
 		return nil, err
 	}
 
-	return &contentResponse, nil
+	return contentResponse.Data.IntoContent(), nil
 }
 
 type UpdateContentResponse struct {
 	GetContentResponse
 }
 
-func (client *Client) UpdateContent(content models.Content) (*UpdateContentResponse, error) {
+func (client *Client) UpdateContent(content models.Content) (*models.Content, error) {
+	if content.ID == "" {
+		return nil, fmt.Errorf("empty ID")
+	}
+
 	body, err := json.Marshal(content.IntoUpdateContentRequest())
 	if err != nil {
 		return nil, err
@@ -139,10 +96,14 @@ func (client *Client) UpdateContent(content models.Content) (*UpdateContentRespo
 		return nil, err
 	}
 
-	return &contentResponse, nil
+	return contentResponse.Data.IntoContent(), nil
 }
 
 func (client *Client) DeleteContent(ID string) error {
+	if ID == "" {
+		return fmt.Errorf("empty ID")
+	}
+
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/content/%s", client.Host, ID), nil)
 	if err != nil {
 		return err

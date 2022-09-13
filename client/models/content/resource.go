@@ -1,5 +1,7 @@
 package content
 
+import "polycode-provider/client/shared"
+
 type Content struct {
 	ID            string
 	Name          string
@@ -20,11 +22,11 @@ func (content *Content) IntoCreateContentRequest() CreateContentRequest {
 			Type: content.RootComponent.Type,
 			Data: CreateComponentRequestData{
 				Components:     content.RootComponent.Data.IntoCreateComponentRequest(),
-				Markdown:       convertNilString(content.RootComponent.Data.Markdown),
+				Markdown:       shared.ConvertNilString(content.RootComponent.Data.Markdown),
 				Items:          content.RootComponent.Data.FlattenItemIdentifiers(),
 				Validators:     content.RootComponent.Data.IntoCreateValidatorRequest(),
 				EditorSettings: content.RootComponent.Data.IntoCreateEditorSettingsRequest(),
-				Orientation:    convertNilString(content.RootComponent.Orientation),
+				Orientation:    shared.ConvertNilString(content.RootComponent.Orientation),
 			},
 		},
 		Data: CreateContentRequestData{},
@@ -48,10 +50,10 @@ func (content Content) IntoUpdateContentRequest() UpdateContentRequest {
 				Components: content.RootComponent.Data.IntoUpdateComponentRequest(),
 				Validators: content.RootComponent.Data.IntoUpdateValidatorRequest(),
 				CreateComponentRequestData: CreateComponentRequestData{
-					Markdown:       convertNilString(content.RootComponent.Data.Markdown),
+					Markdown:       shared.ConvertNilString(content.RootComponent.Data.Markdown),
 					Items:          content.RootComponent.Data.FlattenItemIdentifiers(),
 					EditorSettings: content.RootComponent.Data.IntoCreateEditorSettingsRequest(),
-					Orientation:    convertNilString(content.RootComponent.Orientation),
+					Orientation:    shared.ConvertNilString(content.RootComponent.Orientation),
 				},
 			},
 		},
@@ -88,11 +90,11 @@ func (componentData *ComponentData) IntoCreateComponentRequest() *[]CreateCompon
 			Type: component.Type,
 			Data: CreateComponentRequestData{
 				Components:     component.Data.IntoCreateComponentRequest(),
-				Markdown:       convertNilString(component.Data.Markdown),
+				Markdown:       shared.ConvertNilString(component.Data.Markdown),
 				Items:          component.Data.FlattenItemIdentifiers(),
 				Validators:     component.Data.IntoCreateValidatorRequest(),
 				EditorSettings: component.Data.IntoCreateEditorSettingsRequest(),
-				Orientation:    convertNilString(component.Orientation),
+				Orientation:    shared.ConvertNilString(component.Orientation),
 			},
 		})
 	}
@@ -117,10 +119,10 @@ func (componentData *ComponentData) IntoUpdateComponentRequest() *[]UpdateCompon
 				Components: component.Data.IntoUpdateComponentRequest(),
 				Validators: component.Data.IntoUpdateValidatorRequest(),
 				CreateComponentRequestData: CreateComponentRequestData{
-					Markdown:       convertNilString(component.Data.Markdown),
+					Markdown:       shared.ConvertNilString(component.Data.Markdown),
 					Items:          component.Data.FlattenItemIdentifiers(),
 					EditorSettings: component.Data.IntoCreateEditorSettingsRequest(),
-					Orientation:    convertNilString(component.Orientation),
+					Orientation:    shared.ConvertNilString(component.Orientation),
 				},
 			},
 		})
@@ -223,12 +225,4 @@ type Language struct {
 	DefaultCode string
 	Language    string
 	Version     string
-}
-
-func convertNilString(str string) *string {
-	if str == "" {
-		return nil
-	}
-
-	return &str
 }
