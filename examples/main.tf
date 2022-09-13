@@ -2,7 +2,7 @@ terraform {
   required_providers {
     polycode = {
       source  = "do-2021.fr/polycode/polycode"
-      version = "0.3.2"
+      version = "0.3.3"
     }
   }
 }
@@ -40,7 +40,7 @@ resource "polycode_content" "test" {
         language     = "PYTHON"
         version      = ""
       }
-      hint = ["value"]
+      hint = [polycode_item.test_item.id]
       validator {
         inputs    = ["value"]
         outputs   = ["value"]
@@ -63,5 +63,12 @@ resource "polycode_content" "test" {
         content  = "hello"
       }
     }
+  }
+}
+
+resource "polycode_item" "test_item" {
+  cost = 10
+  hint {
+    text = "cocou"
   }
 }
