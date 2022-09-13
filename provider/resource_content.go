@@ -347,6 +347,8 @@ func resourceContentUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	c := m.(*pc.Client)
 
+	resourceContentRead(ctx, d, m)
+
 	childComponents, err := serializeChildComponents(d.Get("container.0").(map[string]interface{}), ctx)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
