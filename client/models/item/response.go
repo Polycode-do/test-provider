@@ -8,7 +8,7 @@ type GetItemResponse struct {
 }
 
 type GetItemResponseData struct {
-	Text *string `json:"text"`
+	Text string `json:"text"`
 }
 
 type CreateItemResponse struct {
