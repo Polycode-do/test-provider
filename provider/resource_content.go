@@ -77,6 +77,9 @@ func resourceContent() *schema.Resource {
 				Elem:        resourceContentContainer(1),
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
