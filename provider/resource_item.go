@@ -112,9 +112,33 @@ func resourceItemRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	tflog.Info(ctx, fmt.Sprintf("Read Item %+v", d.Get("hint")))
 
-	d.Set("cost", item.Cost)
-	d.Set("hint.0.text", item.Data.Text)
-	d.Set("type", item.Type)
+	err = d.Set("cost", item.Cost)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set cost",
+			Detail:   fmt.Sprintf("Error when setting cost: %s", err.Error()),
+		})
+		return diags
+	}
+	err = d.Set("hint.0.text", item.Data.Text)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set hint text",
+			Detail:   fmt.Sprintf("Error when setting hint text: %s", err.Error()),
+		})
+		return diags
+	}
+	err = d.Set("type", item.Type)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set type",
+			Detail:   fmt.Sprintf("Error when setting type: %s", err.Error()),
+		})
+		return diags
+	}
 
 	return diags
 }
@@ -145,7 +169,15 @@ func resourceItemUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		return diags
 	}
 
-	d.Set("last_update", d.Set("last_updated", time.Now().Format(time.RFC850)))
+	err = d.Set("last_update", d.Set("last_updated", time.Now().Format(time.RFC850)))
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set last update",
+			Detail:   fmt.Sprintf("Error when setting last update: %s", err.Error()),
+		})
+		return diags
+	}
 
 	tflog.Info(ctx, fmt.Sprintf("Updated Item %s", d.Id()))
 
