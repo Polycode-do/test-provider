@@ -336,11 +336,50 @@ func resourceContentRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diags
 	}
 
-	d.Set("name", content.Name)
-	d.Set("description", content.Description)
-	d.Set("type", content.Type)
-	d.Set("reward", content.Reward)
-	d.Set("container", deserializeChildComponents(content.RootComponent, 0, ctx))
+	err = d.Set("name", content.Name)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set name",
+			Detail:   fmt.Sprintf("Error when setting name: %s", err.Error()),
+		})
+		return diags
+	}
+	err = d.Set("description", content.Description)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set description",
+			Detail:   fmt.Sprintf("Error when setting description: %s", err.Error()),
+		})
+		return diags
+	}
+	err = d.Set("type", content.Type)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set type",
+			Detail:   fmt.Sprintf("Error when setting type: %s", err.Error()),
+		})
+		return diags
+	}
+	err = d.Set("reward", content.Reward)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set reward",
+			Detail:   fmt.Sprintf("Error when setting reward: %s", err.Error()),
+		})
+		return diags
+	}
+	err = d.Set("container", deserializeChildComponents(content.RootComponent, 0, ctx))
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set container",
+			Detail:   fmt.Sprintf("Error when setting container: %s", err.Error()),
+		})
+	}
 
 	return diags
 }
@@ -389,7 +428,15 @@ func resourceContentUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diags
 	}
 
-	d.Set("last_update", d.Set("last_updated", time.Now().Format(time.RFC850)))
+	err = d.Set("last_update", d.Set("last_updated", time.Now().Format(time.RFC850)))
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Unable to set last_update",
+			Detail:   fmt.Sprintf("Error when setting last_update: %s", err.Error()),
+		})
+		return diags
+	}
 
 	tflog.Info(ctx, fmt.Sprintf("Updated Content %s", d.Id()))
 

@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  POLYCODE_HOST: ${{ secrets.POLYCODE_HOST }}
+  POLYCODE_USERNAME: ${{ secrets.POLYCODE_USERNAME }}
+  POLYCODE_PASSWORD: ${{ secrets.POLYCODE_PASSWORD }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.49.0
+      - name: Build
+        run: make build
+      - name: Lint
+        run: make lint
+      - name: Format
+        run: make format
+      - name: Test
+        run: make test
