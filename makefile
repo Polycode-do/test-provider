@@ -3,7 +3,7 @@ HOSTNAME=do-2021.fr
 NAMESPACE=polycode
 NAME=polycode
 BINARY=terraform-provider-${NAME}
-VERSION=0.3.3
+VERSION=0.3.4
 OS_ARCH=linux_amd64
 
 default: install
@@ -28,7 +28,6 @@ release:
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	rm -f ./examples/.terraform.lock.hcl
 
 test: 
 	go test -i $(TEST) || exit 1                                                   

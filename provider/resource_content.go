@@ -302,7 +302,7 @@ func resourceContentCreate(ctx context.Context, d *schema.ResourceData, m interf
 		Data: content.ContentData{},
 	}
 
-	res, err := c.CreateContent(co)
+	createdContent, err := c.CreateContent(co)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -312,7 +312,7 @@ func resourceContentCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diags
 	}
 
-	d.SetId(res.Data.ID)
+	d.SetId(createdContent.ID)
 
 	tflog.Info(ctx, fmt.Sprintf("Created Content %s", d.Id()))
 
@@ -326,7 +326,7 @@ func resourceContentRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	tflog.Debug(ctx, fmt.Sprintf("Reading Content %s", d.Id()))
 
-	res, err := c.GetContent(d.Id())
+	content, err := c.GetContent(d.Id())
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -336,11 +336,11 @@ func resourceContentRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diags
 	}
 
-	d.Set("name", res.Data.Name)
-	d.Set("description", res.Data.Description)
-	d.Set("type", res.Data.Type)
-	d.Set("reward", res.Data.Reward)
-	d.Set("container", deserializeChildComponents(res.Data.IntoContent().RootComponent, 0, ctx))
+	d.Set("name", content.Name)
+	d.Set("description", content.Description)
+	d.Set("type", content.Type)
+	d.Set("reward", content.Reward)
+	d.Set("container", deserializeChildComponents(content.RootComponent, 0, ctx))
 
 	return diags
 }

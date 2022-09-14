@@ -76,7 +76,7 @@ func resourceItemCreate(ctx context.Context, d *schema.ResourceData, m interface
 		Cost: int64(d.Get("cost").(int)),
 	}
 
-	res, err := c.CreateItem(it)
+	createdItem, err := c.CreateItem(it)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -86,7 +86,7 @@ func resourceItemCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diags
 	}
 
-	d.SetId(res.Data.ID)
+	d.SetId(createdItem.ID)
 
 	tflog.Info(ctx, fmt.Sprintf("Created Item %s", d.Id()))
 
@@ -100,7 +100,7 @@ func resourceItemRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	tflog.Debug(ctx, fmt.Sprintf("Reading Item %s", d.Id()))
 
-	res, err := c.GetItem(d.Id())
+	item, err := c.GetItem(d.Id())
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -112,9 +112,9 @@ func resourceItemRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	tflog.Info(ctx, fmt.Sprintf("Read Item %+v", d.Get("hint")))
 
-	d.Set("cost", res.Data.Cost)
-	d.Set("hint.0.text", res.Data.Data.Text)
-	d.Set("type", res.Data.Type)
+	d.Set("cost", item.Cost)
+	d.Set("hint.0.text", item.Data.Text)
+	d.Set("type", item.Type)
 
 	return diags
 }
