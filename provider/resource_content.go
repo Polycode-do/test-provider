@@ -83,6 +83,7 @@ func resourceContent() *schema.Resource {
 	}
 }
 
+// `resourceContentContainer` is a recursive function that will create a schema for the content container to a max level of 3 nested containers
 func resourceContentContainer(i int) *schema.Resource {
 	if i > 3 {
 		return &schema.Resource{
@@ -463,6 +464,7 @@ func resourceContentDelete(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
+// `serializeChildComponents` takes the schema of a root component and returns its child components as content.Component struct
 func serializeChildComponents(rootComponent map[string]interface{}, ctx context.Context) ([]content.Component, error) {
 	length := 0
 	for key, val := range rootComponent {
@@ -596,6 +598,7 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 	return childComponents, nil
 }
 
+// `deserializeChildComponents` takes a root component and convert it into a schema
 func deserializeChildComponents(rootComponent content.Component, position int, ctx context.Context) []interface{} {
 	container := make([]interface{}, 0)
 	container = append(container, map[string]interface{}{

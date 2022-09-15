@@ -13,6 +13,10 @@ type GetItemResponse struct {
 	Data     models.GetItemResponse `json:"data"`
 }
 
+// `GetItem` gets an item from the API.
+// @param {string} ID - The ID of the item to get.
+// @returns {Item} - The item that was retrieved.
+// @returns {error} - An error if there was a problem getting the item.
 func (client *Client) GetItem(ID string) (*models.Item, error) {
 	if ID == "" {
 		return nil, fmt.Errorf("empty ID")
@@ -41,6 +45,10 @@ type CreateItemResponse struct {
 	GetItemResponse
 }
 
+// `CreateItem` creates an item in the API.
+// @param {Item} item - The item to create.
+// @returns {Item} - The item that was created.
+// @returns {error} - An error if there was a problem creating the item.
 func (client *Client) CreateItem(item models.Item) (*models.Item, error) {
 	body, err := json.Marshal(item.IntoCreateItemRequest())
 	if err != nil {
@@ -70,6 +78,10 @@ type UpdateItemResponse struct {
 	GetItemResponse
 }
 
+// `UpdateItem` updates an item in the API.
+// @param {Item} item - The item to update.
+// @returns {Item} - The item that was updated.
+// @returns {error} - An error if there was a problem updating the item.
 func (client *Client) UpdateItem(item models.Item) (*models.Item, error) {
 	if item.ID == "" {
 		return nil, fmt.Errorf("empty ID")
@@ -99,6 +111,9 @@ func (client *Client) UpdateItem(item models.Item) (*models.Item, error) {
 	return itemResponse.Data.IntoItem(), nil
 }
 
+// `DeleteItem` deletes an item from the API.
+// @param {string} ID - The ID of the item to delete.
+// @returns {error} - An error if there was a problem deleting the item.
 func (client *Client) DeleteItem(ID string) error {
 	if ID == "" {
 		return fmt.Errorf("empty ID")

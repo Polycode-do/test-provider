@@ -1,25 +1,3 @@
-terraform {
-  required_providers {
-    polycode = {
-      source  = "do-2021.fr/polycode/polycode"
-      version = "v0.3.5-rc4"
-    }
-  }
-}
-
-provider "polycode" {
-  host     = "http://localhost:3000"
-  username = "admin@gmail.com"
-  password = "12345678"
-}
-
-resource "polycode_item" "test_item" {
-  cost = 10
-  hint {
-    text = "This is a hint"
-  }
-}
-
 resource "polycode_content" "test_content" {
   name        = "Test content"
   description = "This is a test content"

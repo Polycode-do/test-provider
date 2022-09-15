@@ -13,6 +13,10 @@ type GetContentResponse struct {
 	Data     models.GetContentResponse `json:"data"`
 }
 
+// `GetContent` gets a content from the API.
+// @param {string} ID - The ID of the content to get.
+// @returns {Content} - The content that was retrieved.
+// @returns {error} - An error if there was a problem getting the content.
 func (client *Client) GetContent(ID string) (*models.Content, error) {
 	if ID == "" {
 		return nil, fmt.Errorf("empty ID")
@@ -41,6 +45,10 @@ type CreateContentResponse struct {
 	GetContentResponse
 }
 
+// `CreateContent` creates a content in the API.
+// @param {Content} content - The content to create.
+// @returns {Content} - The content that was created.
+// @returns {error} - An error if there was a problem creating the content.
 func (client *Client) CreateContent(content models.Content) (*models.Content, error) {
 	body, err := json.Marshal(content.IntoCreateContentRequest())
 	if err != nil {
@@ -70,6 +78,10 @@ type UpdateContentResponse struct {
 	GetContentResponse
 }
 
+// `UpdateContent` updates a content in the API.
+// @param {Content} content - The content to update.
+// @returns {Content} - The content that was updated.
+// @returns {error} - An error if there was a problem updating the content.
 func (client *Client) UpdateContent(content models.Content) (*models.Content, error) {
 	if content.ID == "" {
 		return nil, fmt.Errorf("empty ID")
@@ -99,6 +111,9 @@ func (client *Client) UpdateContent(content models.Content) (*models.Content, er
 	return contentResponse.Data.IntoContent(), nil
 }
 
+// `DeleteContent` deletes a content from the API.
+// @param {string} ID - The ID of the content to delete.
+// @returns {error} - An error if there was a problem deleting the content.
 func (client *Client) DeleteContent(ID string) error {
 	if ID == "" {
 		return fmt.Errorf("empty ID")
