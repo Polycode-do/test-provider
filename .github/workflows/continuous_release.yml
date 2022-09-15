@@ -3,7 +3,7 @@ name: continuous_release
 on:
   push:
     branches: ["**"]
-    tags: ["v*"]
+    tags: ["v**"]
 
 env:
   GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
@@ -25,9 +25,15 @@ jobs:
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0.9.7
       - name: Bump Version
+        if: startsWith(github.ref, 'refs/heads/')
         run: make bump
         env:
           BUILD_VERSION: v${{ steps.gitversion.outputs.MajorMinorPatch }}-rc${{ steps.gitversion.outputs.CommitsSinceVersionSource }}
+      - name: Bump Version for release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: make bump
+        env:
+          BUILD_VERSION: v${{ steps.gitversion.outputs.MajorMinorPatch }}
       - name: Commit Version Bump if on main
         if: github.ref == 'refs/heads/main'
         uses: EndBug/add-and-commit@v7
