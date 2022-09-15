@@ -16,3 +16,4 @@
 
 # Ignore binaries
 **/terraform-provider-polycode
+bin/
