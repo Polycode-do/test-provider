@@ -2,7 +2,6 @@ name: versioning
 
 on:
   push:
-    branches: ["main"]
 
 env:
   GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
@@ -27,7 +26,8 @@ jobs:
         run: make bump
         env:
           BUILD_VERSION: v${{ steps.gitversion.outputs.MajorMinorPatch }}-rc${{ steps.gitversion.outputs.CommitsSinceVersionSource }}
-      - name: Commit Version Bump
+      - name: Commit Version Bump if on main
+        if: github.ref == 'refs/heads/main'
         uses: EndBug/add-and-commit@v7
         with:
           default_author: github_actions

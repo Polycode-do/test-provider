@@ -30,4 +30,3 @@ ci: build lint format test
 
 bump:
 	sed -i -E "/^VERSION=/c\VERSION=$(BUILD_VERSION)" makefile
-	sed -i "/^      version = /c\      version = \"$(BUILD_VERSION)\"" examples/main.tf
