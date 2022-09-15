@@ -14,6 +14,9 @@ type LoginResponse struct {
 	Data     auth.LoginResponse `json:"data"`
 }
 
+// `Login` authenticates the client with the API and returns an access token.
+// @returns {string} - The access token that will be used to authenticate the client.
+// @returns {error} - An error if the client could not be authenticated.
 func (client *Client) Login() (*string, error) {
 	if client.Auth.Username == "" || client.Auth.Password == "" {
 		return nil, fmt.Errorf("empty username or password")

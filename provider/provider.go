@@ -17,17 +17,20 @@ func Provider() *schema.Provider {
 			"host": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Description: "The host of the Polycode API to interact with",
 				DefaultFunc: schema.EnvDefaultFunc("POLYCODE_HOST", nil),
 			},
 			"username": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Description: "The Polycode username to connect with",
 				DefaultFunc: schema.EnvDefaultFunc("POLYCODE_USERNAME", nil),
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
+				Description: "The Polycode password to connect with",
 				DefaultFunc: schema.EnvDefaultFunc("POLYCODE_PASSWORD", nil),
 			},
 		},
