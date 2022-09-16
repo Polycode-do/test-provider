@@ -1,6 +1,6 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=do-2021.fr
-NAMESPACE=polycode
+HOSTNAME=Polycode-do
+NAMESPACE=polycode-provider
 NAME=polycode
 BINARY=terraform-provider-${NAME}
 VERSION=v0.3.10-rc1
