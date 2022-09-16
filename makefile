@@ -30,7 +30,7 @@ ci: build lint format test
 
 bump:
 	sed -i -E "/^VERSION=/c\VERSION=$(BUILD_VERSION)" makefile
-	sed -i -E "/^  \"version\":/c\  \"version\": \"$(BUILD_VERSION)\"," terraform-registry-manifest.json
+	sed -i -E "/^  \"version\":/c\  \"version\": $(MAJOR_MINOR_PATCH)," terraform-registry-manifest.json
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
