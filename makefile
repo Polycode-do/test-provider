@@ -3,7 +3,7 @@ HOSTNAME=Polycode-do
 NAMESPACE=polycode-provider
 NAME=polycode
 BINARY=terraform-provider-${NAME}
-VERSION=v0.3.10-rc1
+VERSION=v0.3.10-rc4
 OS_ARCH=linux_amd64
 
 default: install
