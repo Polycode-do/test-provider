@@ -1,9 +1,10 @@
 name: continuous_release
 
 on:
+  # For unknown reasons, the push.tags event is not triggered when a tag is pushed so we'll use create and check the ref for now
+  create:
   push:
     branches: ["**"]
-    tags: ["v**"]
 
 env:
   GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
