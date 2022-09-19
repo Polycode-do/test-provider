@@ -40,7 +40,6 @@ jobs:
           echo "::set-output name=BuildVersion::$BUILD_VERSION"
         env:
           BUILD_VERSION: ${{ env.BUILD_VERSION }}
-          MAJOR_MINOR_PATCH: ${{ steps.gitversion.outputs.MajorMinorPatch }}
       - name: Checkout on main
         if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/checkout@v3
