@@ -29,7 +29,7 @@ test:
 ci: build lint format test
 
 bump:
-	sed -i -E "/^VERSION=/c\VERSION=$(BUILD_VERSION)" makefile
+	sed -i -E "/^VERSION=/c\VERSION=$(BUILD_VERSION)" Makefile
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
