@@ -21,7 +21,6 @@ func resourceContent() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"last_update": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Last update of the resource",
 			},
@@ -121,13 +120,13 @@ func resourceContentContainer(i int) *schema.Resource {
 				},
 			},
 			"markdown": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The markdown component",
 				Elem:        resourceContentDataMarkdown(),
 			},
 			"editor": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The editor component",
 				Elem:        resourceContentDataEditor(),
@@ -194,7 +193,7 @@ func resourceContentDataEditor() *schema.Resource {
 				},
 			},
 			"language_settings": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				Description: "List of languages for the editor",
 				Elem:        resourceContentLanguage(),
@@ -206,7 +205,7 @@ func resourceContentDataEditor() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"validator": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "List of validators for the editor",
 				Elem:        resourceContentValidator(),
@@ -278,7 +277,7 @@ func resourceContentCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	var diags diag.Diagnostics
 
-	childComponents, err := serializeChildComponents(d.Get("container.0").(map[string]interface{}), ctx)
+	rootComponent, err := serializeRootComponent(d.Get("container.0").(map[string]interface{}), ctx)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -289,18 +288,12 @@ func resourceContentCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	co := content.Content{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Type:        d.Get("type").(string),
-		Reward:      int64(d.Get("reward").(int)),
-		RootComponent: content.Component{
-			Orientation: d.Get("container.0.orientation").(string),
-			Type:        "container",
-			Data: content.ComponentData{
-				Components: childComponents,
-			},
-		},
-		Data: content.ContentData{},
+		Name:          d.Get("name").(string),
+		Description:   d.Get("description").(string),
+		Type:          d.Get("type").(string),
+		Reward:        int64(d.Get("reward").(int)),
+		RootComponent: *rootComponent,
+		Data:          content.ContentData{},
 	}
 
 	createdContent, err := c.CreateContent(co)
@@ -373,7 +366,7 @@ func resourceContentRead(ctx context.Context, d *schema.ResourceData, m interfac
 		})
 		return diags
 	}
-	err = d.Set("container", deserializeChildComponents(content.RootComponent, 0, ctx))
+	err = d.Set("container", deserializeRootComponent(content.RootComponent, 0, ctx))
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -390,9 +383,7 @@ func resourceContentUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	c := m.(*pc.Client)
 
-	resourceContentRead(ctx, d, m)
-
-	childComponents, err := serializeChildComponents(d.Get("container.0").(map[string]interface{}), ctx)
+	rootComponent, err := serializeRootComponent(d.Get("container.0").(map[string]interface{}), ctx)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -403,20 +394,13 @@ func resourceContentUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	co := content.Content{
-		ID:          d.Id(),
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Type:        d.Get("type").(string),
-		Reward:      int64(d.Get("reward").(int)),
-		RootComponent: content.Component{
-			ID:          d.Get("container.0.id").(string),
-			Orientation: d.Get("container.0.orientation").(string),
-			Type:        "container",
-			Data: content.ComponentData{
-				Components: childComponents,
-			},
-		},
-		Data: content.ContentData{},
+		ID:            d.Id(),
+		Name:          d.Get("name").(string),
+		Description:   d.Get("description").(string),
+		Type:          d.Get("type").(string),
+		Reward:        int64(d.Get("reward").(int)),
+		RootComponent: *rootComponent,
+		Data:          content.ContentData{},
 	}
 
 	_, err = c.UpdateContent(co)
@@ -429,7 +413,7 @@ func resourceContentUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diags
 	}
 
-	err = d.Set("last_update", d.Set("last_updated", time.Now().Format(time.RFC850)))
+	err = d.Set("last_update", time.Now().Format(time.RFC850))
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -464,14 +448,11 @@ func resourceContentDelete(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
-// `serializeChildComponents` takes the schema of a root component and returns its child components as content.Component struct
-func serializeChildComponents(rootComponent map[string]interface{}, ctx context.Context) ([]content.Component, error) {
+// `serializeRootComponent` takes the schema of a root component and returns itself as content.Component struct
+func serializeRootComponent(rootComponent map[string]interface{}, ctx context.Context) (*content.Component, error) {
 	length := 0
 	for key, val := range rootComponent {
-		if key == "markdown" || key == "editor" {
-			length += len(val.(*schema.Set).List())
-		}
-		if key == "container" && val != nil {
+		if (key == "container" || key == "markdown" || key == "editor") && val != nil {
 			length += len(val.([]interface{}))
 		}
 	}
@@ -484,7 +465,7 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 	for key, val := range rootComponent {
 		switch key {
 		case "markdown":
-			for _, v := range val.(*schema.Set).List() {
+			for _, v := range val.([]interface{}) {
 				markdown := v.(map[string]interface{})
 
 				position := markdown["position"].(int)
@@ -502,11 +483,11 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 				}
 			}
 		case "editor":
-			for _, v := range val.(*schema.Set).List() {
+			for _, v := range val.([]interface{}) {
 				editor := v.(map[string]interface{})
 
 				languages := make([]content.Language, 0)
-				for _, language := range editor["language_settings"].(*schema.Set).List() {
+				for _, language := range editor["language_settings"].([]interface{}) {
 					languages = append(languages, content.Language{
 						DefaultCode: language.(map[string]interface{})["default_code"].(string),
 						Language:    language.(map[string]interface{})["language"].(string),
@@ -515,7 +496,7 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 				}
 
 				validators := make([]content.Validator, 0)
-				for _, validator := range editor["validator"].(*schema.Set).List() {
+				for _, validator := range editor["validator"].([]interface{}) {
 					inputs := make([]string, len(validator.(map[string]interface{})["inputs"].([]interface{})))
 					for key, val := range validator.(map[string]interface{})["inputs"].([]interface{}) {
 						inputs[key] = val.(string)
@@ -572,19 +553,12 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 				}
 				positions[position-1] = true
 
-				containerChildComponents, err := serializeChildComponents(container, ctx)
+				containerComponent, err := serializeRootComponent(container, ctx)
 				if err != nil {
 					return nil, err
 				}
 
-				childComponents[position-1] = content.Component{
-					ID:   container["id"].(string),
-					Type: "container",
-					Data: content.ComponentData{
-						Components: containerChildComponents,
-					},
-					Orientation: container["orientation"].(string),
-				}
+				childComponents[position-1] = *containerComponent
 			}
 		}
 	}
@@ -595,20 +569,21 @@ func serializeChildComponents(rootComponent map[string]interface{}, ctx context.
 		}
 	}
 
-	return childComponents, nil
+	return &content.Component{
+		ID:          rootComponent["id"].(string),
+		Orientation: rootComponent["orientation"].(string),
+		Type:        "container",
+		Data: content.ComponentData{
+			Components: childComponents,
+		},
+	}, nil
 }
 
-// `deserializeChildComponents` takes a root component and convert it into a schema
-func deserializeChildComponents(rootComponent content.Component, position int, ctx context.Context) []interface{} {
-	container := make([]interface{}, 0)
-	container = append(container, map[string]interface{}{
-		"id":          rootComponent.ID,
-		"orientation": rootComponent.Orientation,
-		"position":    position,
-	})
-
+// `deserializeRootComponent` takes a root component and convert it into a schema
+func deserializeRootComponent(rootComponent content.Component, position int, ctx context.Context) []interface{} {
 	markdown := make([]interface{}, 0)
 	editor := make([]interface{}, 0)
+	container := make([]interface{}, 0)
 
 	tflog.Debug(ctx, fmt.Sprintf("Deserializing root Component %s", rootComponent.ID))
 
@@ -655,20 +630,25 @@ func deserializeChildComponents(rootComponent content.Component, position int, c
 			}
 
 			editor = append(editor, map[string]interface{}{
-				"id":       childComponent.ID,
-				"hint":     hints,
-				"position": key + 1,
+				"id":                childComponent.ID,
+				"language_settings": languages,
+				"validator":         validators,
+				"hint":              hints,
+				"position":          key + 1,
 			})
-
-			editor[0].(map[string]interface{})["language_settings"] = schema.NewSet(schema.HashResource(resourceContentLanguage()), languages)
-			editor[0].(map[string]interface{})["validator"] = schema.NewSet(schema.HashResource(resourceContentValidator()), validators)
 		case "container":
-			container[0].(map[string]interface{})["container"] = deserializeChildComponents(childComponent, key+1, ctx)
+			container = deserializeRootComponent(childComponent, key+1, ctx)
 		}
 	}
 
-	container[0].(map[string]interface{})["markdown"] = schema.NewSet(schema.HashResource(resourceContentDataMarkdown()), markdown)
-	container[0].(map[string]interface{})["editor"] = schema.NewSet(schema.HashResource(resourceContentDataEditor()), editor)
-
-	return container
+	return []interface{}{
+		map[string]interface{}{
+			"id":          rootComponent.ID,
+			"orientation": rootComponent.Orientation,
+			"position":    position,
+			"markdown":    markdown,
+			"editor":      editor,
+			"container":   container,
+		},
+	}
 }
