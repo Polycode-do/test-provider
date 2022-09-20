@@ -22,7 +22,6 @@ func resourceItem() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"last_update": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "Last update of the resource",
 			},
@@ -110,8 +109,6 @@ func resourceItemRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diags
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("Read Item %+v", d.Get("hint")))
-
 	err = d.Set("cost", item.Cost)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -121,21 +118,12 @@ func resourceItemRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		})
 		return diags
 	}
-	err = d.Set("hint.0.text", item.Data.Text)
+	err = d.Set("hint", []interface{}{map[string]interface{}{"text": item.Data.Text}})
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Unable to set hint text",
 			Detail:   fmt.Sprintf("Error when setting hint text: %s", err.Error()),
-		})
-		return diags
-	}
-	err = d.Set("type", item.Type)
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Unable to set type",
-			Detail:   fmt.Sprintf("Error when setting type: %s", err.Error()),
 		})
 		return diags
 	}
@@ -147,8 +135,6 @@ func resourceItemUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 
 	c := m.(*pc.Client)
-
-	resourceItemRead(ctx, d, m)
 
 	it := item.Item{
 		ID:   d.Id(),
@@ -169,7 +155,7 @@ func resourceItemUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		return diags
 	}
 
-	err = d.Set("last_update", d.Set("last_updated", time.Now().Format(time.RFC850)))
+	err = d.Set("last_update", time.Now().Format(time.RFC850))
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
