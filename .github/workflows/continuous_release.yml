@@ -33,6 +33,12 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           echo "BUILD_VERSION=${{ steps.gitversion.outputs.MajorMinorPatch }}" >> $GITHUB_ENV
+      - name: Checkout on main
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/checkout@v3
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          ref: "refs/heads/main"
       - name: Bump Version
         id: bump_version
         run: |
@@ -40,12 +46,6 @@ jobs:
           echo "::set-output name=BuildVersion::$BUILD_VERSION"
         env:
           BUILD_VERSION: ${{ env.BUILD_VERSION }}
-      - name: Checkout on main
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/checkout@v3
-        with:
-          token: ${{ env.GITHUB_TOKEN }}
-          ref: "refs/heads/main"
       - name: Commit Version Bump on main
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: EndBug/add-and-commit@v7
