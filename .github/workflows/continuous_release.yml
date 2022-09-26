@@ -59,6 +59,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          ref: "refs/heads/main"
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
