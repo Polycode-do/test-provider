@@ -52,6 +52,7 @@ jobs:
         with:
           default_author: github_actions
           message: "chore: [skip ci] bump version to ${{ steps.bump_version.outputs.BuildVersion }}"
+          push: "origin main --set-upstream"
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: bump_version
