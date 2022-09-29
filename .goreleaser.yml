@@ -51,8 +51,6 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
-  draft: true
-
   header: |
     # Release {{ .Version }}
     ## New Features
