@@ -52,6 +52,7 @@ jobs:
         with:
           commit_message: "chore: [skip ci] bump version to ${{ steps.bump_version.outputs.BuildVersion }}"
           commit_options: "-a"
+          commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: bump_version
