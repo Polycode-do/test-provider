@@ -51,10 +51,6 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
-  header: |
-    # Release {{ .Version }}
-    ## New Features
-    ## Bug Fixes
   extra_files:
     - glob: "terraform-registry-manifest.json"
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
@@ -62,14 +58,3 @@ release:
   # draft: true
 changelog:
   skip: true
-  use: github
-
-  groups:
-    - title: Features
-      regexp: "^.*feat[(\\w)]*:+.*$"
-      order: 0
-    - title: "Bug fixes"
-      regexp: "^.*fix[(\\w)]*:+.*$"
-      order: 1
-    - title: Others
-      order: 999
